@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>project: moon rise</title>
+    <style>
+        /* Main layout styling */
+        body, html {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+
+        .profile-container {
+            display: grid;
+            grid-template-columns: repeat(2, 200px);
+            gap: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+            .profile img {
+                width: 100%;
+                height: 150px;
+                border-radius: 8px;
+                background-color: #eee;
+            }
+
+            .profile button, .profile a {
+                margin-top: 10px;
+                padding: 8px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 1em;
+            }
+
+            .profile button {
+                background-color: #4CAF50;
+                color: white;
+            }
+
+            .profile a {
+                display: inline-block;
+                background-color: #0088cc;
+                color: white;
+                text-decoration: none;
+                padding: 10px;
+            }
+
+        /* Canvas styling */
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            width: 100%;
+            height: 100%;
+        }
+      
+        
+    </style>
+</head>
+<body>
+    <div class="profile-container"></div>
+    <audio id="background-music" autoplay loop>
+        <source src="C:\Users\ASUS\OneDrive\Desktop\pics\Daisuke - El Huervo(MP3_160K).mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+
+
+    <canvas></canvas>
+    <script>
+        // Profile data
+        const columnLeftInner = document.querySelector('.column-left-inner');
+        document.addEventListener('click', function () {
+            const audio = document.getElementById('background-music');
+            audio.muted = false;
+            audio.play();
+        }, { once: true }); // Ensures it only runs once on the first click
+
+
+        const profiles = [
+            {
+                name: 'RASHEED BASHIR ABBAS',
+                image: 'C:\\Users\\ASUS\\OneDrive\\Desktop\\pics\\photo_2024-07-10_17-07-26.jpg', // Replace with actual image URLs
+                telegram: 'https://t.me/s_m_nz',
+                cv: 'C:\\Users\\ASUS\\OneDrive\\Desktop\\cv_files\\RASHEED BASHIR ABBAS.docx' // Link to CV
+            },
+            {
+                name: 'MURTADHA AHMAD RADHI',
+                image: 'C:\\Users\\ASUS\\OneDrive\\Desktop\\pics\\photo_2024-11-13_23-29-56.jpg',
+                telegram: 'https://t.me/Murdr01',
+                cv: 'C:\\Users\\ASUS\\OneDrive\\Desktop\\cv_files\\MURTADHA AHMAD RADHI.docx' // Link to CV
+            },
+            {
+                name: 'MOHAMMAD AL-BAQIR HUSSAIN',
+                image: 'C:\\Users\\ASUS\\OneDrive\\Desktop\\pics\\photo_2024-11-04_03-05-53.jpg',
+                telegram: 'https://t.me/Mo_IQ32',
+                cv: 'C:\\Users\\ASUS\\OneDrive\\Desktop\\cv_files\\MOHAMMAD AL-BAQIR HUSSAIN.docx'
+            },
+            {
+                name: 'mustafa balasim',
+                image: 'C:\\Users\\ASUS\\OneDrive\\Desktop\\pics\\photo_2024-11-06_02-02-13.jpg',
+                telegram: 'https://t.me/mustafaccccc',
+                cv: 'cv_files/murtadha_ahmad_radhi.docx'
+            }
+        ];
+
+        // Function to load profiles
+        const loadProfiles = () => {
+            const profileContainer = document.querySelector('.profile-container');
+            profiles.forEach(profile => {
+                const profileDiv = document.createElement('div');
+                profileDiv.className = 'profile';
+                profileDiv.innerHTML = `
+                                                <img src="${profile.image}" alt="Profile Picture of ${profile.name}" />
+                                                <button onclick="info('${profile.name}')">info</button>
+                                                 <!-- CV download button -->
+        <a href="${profile.cv}" download="${profile.name}'s CV">
+            <button>Download CV</button>
+        </a>
+                                                <a href="${profile.telegram}" target="_blank" title="${profile.name}'s Telegram">
+                                                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="24" alt="Telegram">
+                                                </a>
+                                            `;
+                profileContainer.appendChild(profileDiv);
+            });
+        };
+
+        // Function to view CV
+        function info(person) {
+            alert(`the button underneath will download the cv of  ${person}`);
+        }
+
+        // Load profiles when the window loads
+        window.onload = () => {
+            loadProfiles();
+            initCanvas(); // Call the canvas initialization function
+        };
+
+        // Canvas initialization
+        function initCanvas() {
+            let renderer, canvas;
+            const dpr = Math.max(1, 0.5 * devicePixelRatio);
+            const resize = () => {
+                const { innerWidth: width, innerHeight: height } = window;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                if (renderer) {
+                    renderer.updateScale(dpr);
+                }
+            };
+            canvas = document.querySelector("canvas");
+            renderer = new Renderer
+                (canvas, dpr);
+            renderer.setup();
+            renderer.init();
+            resize();
+            window.onresize = resize;
+            const loop = (now) => {
+                renderer.render(now);
+                requestAnimationFrame(loop);
+            };
+            loop(0);
+        }
+
+        class Renderer {
+            #vertexSrc = "#version 300 es\nprecision highp float;\nin vec4 position;\nvoid main(){gl_Position=position;}";
+            #fragmtSrc = "#version 300 es\nprecision highp float;\nout vec4 O;\nuniform float time;\nuniform vec2 resolution;\nvoid main() {\n\tvec2 uv=gl_FragCoord.xy/resolution;\n\tO=vec4(uv,sin(time)*.5+.5,1);\n}";
+            #vertices = [-1, 1, -1, -1, 1, 1, 1, -1];
+
+            constructor(canvas, scale) {
+                this.canvas = canvas;
+                this.scale = scale;
+                this.gl = canvas.getContext("webgl2");
+                this.gl.viewport(0, 0, canvas.width * scale, canvas.height * scale);
+                this.shaderSource = this.#fragmtSrc;
+                this.mouseCoords = [0, 0];
+                this.pointerCoords = [0, 0];
+                this.nbrOfPointers = 0;
+            }
+
+            updateShader(source) {
+                this.reset();
+                this.shaderSource = source;
+                this.setup();
+                this.init();
+            }
+
+            updateScale(scale) {
+                this.scale = scale;
+                this.gl.viewport(0, 0, this.canvas.width * scale, this.canvas.height * scale);
+            }
+
+            setup() {
+                const gl = this.gl;
+                this.vs = gl.createShader(gl.VERTEX_SHADER);
+                this.fs = gl.createShader(gl.FRAGMENT_SHADER);
+                this.compile(this.vs, this.#vertexSrc);
+                this.compile(this.fs, this.shaderSource);
+                this.program = gl.createProgram();
+                gl.attachShader(this.program, this.vs);
+                gl.attachShader(this.program, this.fs);
+                gl.linkProgram(this.program);
+            }
+
+            init() {
+                const { gl, program } = this;
+                this.buffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(this.#vertices), gl.STATIC_DRAW);
+                const position = gl.getAttribLocation(program, "position");
+                gl.enableVertexAttribArray(position);
+                gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+                program.resolution = gl.getUniformLocation(program, "resolution");
+                program.time = gl.getUniformLocation(program, "time");
+            }
+
+            render(now = 0) {
+                const { gl, program, buffer, canvas } = this;
+                if (!program || gl.getProgramParameter(program, gl.DELETE_STATUS)) return;
+                gl.clearColor(0, 0, 0, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.useProgram(program);
+                gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+                gl.uniform2f(program.resolution, canvas.width, canvas.height);
+                gl.uniform1f(program.time, now * 1e-3);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            }
+
+            compile(shader, source) {
+                const gl = this.gl;
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error(gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
